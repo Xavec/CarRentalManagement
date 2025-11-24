@@ -1,0 +1,62 @@
+﻿@page "/vehicles/details"
+@using Microsoft.EntityFrameworkCore
+@using CarRentalManagement.Domain
+@inject IDbContextFactory<CarRentalManagement.Data.CarRentalManagementContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>Vehicles</h2>
+    <hr />
+    @if (vehicles is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Year</dt>
+            <dd class="col-sm-10">@vehicles.Year</dd>
+            <dt class="col-sm-2">LicensePlateNumber</dt>
+            <dd class="col-sm-10">@vehicles.LicensePlateNumber</dd>
+            <dt class="col-sm-2">MakeId</dt>
+            <dd class="col-sm-10">@vehicles.MakeId</dd>
+            <dt class="col-sm-2">ModelId</dt>
+            <dd class="col-sm-10">@vehicles.ModelId</dd>
+            <dt class="col-sm-2">ColourId</dt>
+            <dd class="col-sm-10">@vehicles.ColourId</dd>
+            <dt class="col-sm-2">DateCreated</dt>
+            <dd class="col-sm-10">@vehicles.DateCreated</dd>
+            <dt class="col-sm-2">DateUpdated</dt>
+            <dd class="col-sm-10">@vehicles.DateUpdated</dd>
+            <dt class="col-sm-2">CreatedBy</dt>
+            <dd class="col-sm-10">@vehicles.CreatedBy</dd>
+            <dt class="col-sm-2">UpdatedBy</dt>
+            <dd class="col-sm-10">@vehicles.UpdatedBy</dd>
+        </dl>
+        <div>
+            <a href="@($"/vehicles/edit?id={vehicles.Id}")">Edit</a> |
+            <a href="@($"/vehicles")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private Vehicles? vehicles;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        vehicles = await context.Vehicles.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (vehicles is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

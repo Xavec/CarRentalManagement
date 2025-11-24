@@ -1,0 +1,129 @@
+﻿@page "/vehicles/edit"
+@using Microsoft.EntityFrameworkCore
+@using CarRentalManagement.Domain
+@inject IDbContextFactory<CarRentalManagement.Data.CarRentalManagementContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>Vehicles</h2>
+<hr />
+@if (Vehicles is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Vehicles" OnValidSubmit="UpdateVehicles" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="Vehicles.Id" value="@Vehicles.Id" />
+                <div class="mb-3">
+                    <label for="year" class="form-label">Year:</label>
+                    <InputNumber id="year" @bind-Value="Vehicles.Year" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.Year" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="licenseplatenumber" class="form-label">LicensePlateNumber:</label>
+                    <InputText id="licenseplatenumber" @bind-Value="Vehicles.LicensePlateNumber" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.LicensePlateNumber" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="makeid" class="form-label">MakeId:</label>
+                    <InputNumber id="makeid" @bind-Value="Vehicles.MakeId" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.MakeId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="modelid" class="form-label">ModelId:</label>
+                    <InputNumber id="modelid" @bind-Value="Vehicles.ModelId" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.ModelId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="colourid" class="form-label">ColourId:</label>
+                    <InputNumber id="colourid" @bind-Value="Vehicles.ColourId" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.ColourId" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="datecreated" class="form-label">DateCreated:</label>
+                    <InputDate id="datecreated" @bind-Value="Vehicles.DateCreated" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.DateCreated" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="dateupdated" class="form-label">DateUpdated:</label>
+                    <InputDate id="dateupdated" @bind-Value="Vehicles.DateUpdated" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.DateUpdated" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="createdby" class="form-label">CreatedBy:</label>
+                    <InputText id="createdby" @bind-Value="Vehicles.CreatedBy" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.CreatedBy" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="updatedby" class="form-label">UpdatedBy:</label>
+                    <InputText id="updatedby" @bind-Value="Vehicles.UpdatedBy" class="form-control" />
+                    <ValidationMessage For="() => Vehicles.UpdatedBy" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/vehicles">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Vehicles? Vehicles { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Vehicles ??= await context.Vehicles.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Vehicles is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateVehicles()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Vehicles!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!VehiclesExists(Vehicles!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/vehicles");
+    }
+
+    private bool VehiclesExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Vehicles.Any(e => e.Id == id);
+    }
+}
